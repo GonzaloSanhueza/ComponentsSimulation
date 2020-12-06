@@ -1,0 +1,95 @@
+---
+title: "Simulación de Préstamos"
+author: "Gonzalo Sanhueza"
+date: "06-12-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Cargar Paquetes y Datos
+```{r tidyverse}
+library(tidyverse)
+loans <- read_csv("https://raw.githubusercontent.com/bot13956/Monte_Carlo_Simulation_Loan_Status/master/loan_timing.csv")
+
+names(loans) <- c("days_origination", "charge_off")
+loans
+skimr::skim(loans)
+```
+
+## Descripción de los datos
+
+El dataset tiene dos columnas y 50.000 observaciones
+La columna de `days_origination` está completa, mietras que `charge_off` tiene un 6,61% de valores completos
+
+
+## Exploración de los datos
+
+```{r}
+ggplot(data = loans, mapping = aes(x = days_origination)) + 
+  geom_histogram(bins = 30, color = "white") + 
+  labs(title = "Distribución de días desde el origen de un préstamo", x = "Cantidad de días", y = "Frecuencia absoluta")
+```
+
+La antigüedad de un préstamo medido en días sigue una distribución uniforme, tal que $días \sim Uniforme(a,b)$, con $a = 0$ y $b = 730$
+
+```{r}
+ggplot(data = loans %>% 
+         na.omit(), mapping = aes(x = charge_off)) + 
+  geom_histogram(bins = 30, color = "white") + 
+  labs(title = "Distribución de días desde el origen hasta el cancelamiento de un préstamo", x = "Cantidad de días hasta el cancelamiento del préstamo", y = "Frecuencia absoluta")
+```
+
+Aparentemente los días hasta el cancelamiento del préstamo siguen una distribución exponencial, tal que $charge\hspace{0.1cm}off\sim Exp(\lambda)$ con $\lambda = 215$ días
+
+
+```{r}
+loans %>% 
+  na.omit() %>% 
+  ggplot(mapping = aes(x = days_origination)) +
+  geom_histogram(bins = 30, color = "white") +
+  labs(title = "Distribución de días desde el origen para préstamos cancelados", x = "Cantidad de días desde el origen del préstamo", y = "Frecuencia absoluta")
+```
+
+```{r}
+plot_hist <- loans %>% 
+  mutate(status = ifelse(is.na(charge_off), "activo", "cancelado")) %>% 
+  ggplot(mapping = aes(x = days_origination, fill = status)) +
+  geom_histogram(bins = 30, color = "white", show.legend = F) +
+  facet_wrap(~status, scales = "free") +
+  labs(title = "Comparación de antigüedad entre\npréstamos activos y cancelados", y = "Frecuencia Absoluta", x = "Días desde el origen del préstamo") +
+  theme(plot.title = element_text(hjust = .5, size = 20, face = "bold"),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 12),
+        strip.text = element_text(size = 16, face = "italic"))
+          
+ggsave(plot = plot_hist, filename = "Plots/plot_hist.png", type = "cairo", dpi = 300, height = 5, width = 9)
+```
+
+
+
+
+## Algunas Estadísticas
+
+```{r}
+quantile(loans %>% 
+           na.omit() %>% 
+           pull(charge_off), probs = c(.5, .6, .8, .95, .99))
+```
+
+* 50% de los préstamos que se cancelan son cancelados en 180 días o menos
+* 95% de los préstamos que se cancelan son cancelados en 534 días o menos
+* el 1 % de los préstamos cancelados se cancelan en los ultimos 450 días
+
+
+```
+
+```{r}
+loans %>% 
+  na.omit()
+```
+
+
+

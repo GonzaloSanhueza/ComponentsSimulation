@@ -17,5 +17,9 @@ En el [CSV adjuntado](https://github.com/bot13956/Monte_Carlo_Simulation_Loan_St
 
 - Para préstamos que cancelaron antes que los datos fueran recolectados, la columna con encabezado "days from origination to charge-off" indica el número de días transcurridos entre "origination" y "charge-off". Para los demás préstamos, esta columna no tiene valor.
 
-OBJETIVO	
+## OBJETIVO	
 Queremos que estime qué fracción de estos préstamos se habrán cancelado para cuando terminen sus plazos de 3 años. Por favor, incluya una explicación rigurosa de cómo llegó a su respuesta, e incluya cualquier código que use. Podrá hacer uso de supuestos simplificadores, pero explique claramente.
+
+
+## Desarrollo
+![](Plots/plot_hist.png)
