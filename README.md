@@ -23,3 +23,6 @@ Queremos que estime qué fracción de estos préstamos se habrán cancelado para
 
 ## Desarrollo
 ![](Plots/plot_hist.png)
+
+## Resultado
+![](Plots/plot_results.png)

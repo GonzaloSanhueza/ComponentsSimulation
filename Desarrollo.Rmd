@@ -86,10 +86,54 @@ quantile(loans %>%
 
 ```
 
-```{r}
-loans %>% 
-  na.omit()
 ```
+```{r}
+# Simulación Monte Carlo para la probabilidad de charge-off de un préstamo
+# Supuestos: days se distribuye uniforme, default se distribuye exponencial
+#            La verdadera probabilidad de charge-off (default en 3 años) es directamente
+#            proporcional a la proporción de charge-off tras dos años
+
+lambda <- mean(loans$charge_off, na.rm = TRUE)
+inactive_loans <- loans %>% na.omit()
+N <- 1000   # Número de simulaciones
+n <- 50000  # Tamaño muestral por simulación
+results <- vector(mode = "numeric", length = N)   # Vector para almacenar resultados de la simulación
+
+for(i in seq_len(N)) {
+  
+  days <- runif(n = n, min = 0, max = 365 * 3)
+  default <- rexp(n = n, rate = 1 / lambda)
+  
+  simulation <- tibble(days = round(days), default = round(default))
+  
+  valid_simulations <- simulation %>% filter(default <= days)
+  two_years_simul <- valid_simulations %>% filter(default <= 365 * 2)
+  
+  default_proportion <- nrow(inactive_loans) * nrow(valid_simulations) / (nrow(two_years_simul) * n)
+  results[i] <- default_proportion
+}
+
+# Media con intervalo de confienza del 95%
+mean(results)
+quantile(results, probs = c(0.025, 0.975))
+```
+
+```{r}
+  results_df <- tibble(results) 
+  plot_results <- ggplot(data = results_df, mapping = aes(x = results)) + 
+    geom_histogram(bins = 30, color = "white", fill = "steelblue") +
+    labs(title = "Resultado de Simulación Monte Carlo para la probabilidad\nde que un cliente cancele un préstamo por no pago", x = "Probabilidad de charge-off", y = "Frecuencia absoluta") +
+    scale_x_continuous(labels = scales::percent_format()) + 
+    geom_vline(xintercept = c(0.06652228, 0.06663284), linetype = "dashed", color = "blue") + 
+    theme(plot.title = element_text(hjust = .5, size = 20, face = "bold"),
+          axis.title = element_text(size = 16),
+          axis.text = element_text(size = 12))
+          
+ggsave(plot = plot_results, filename = "Plots/plot_results.png", type = "cairo", dpi = 300, height = 5, width = 9)
+```
+
+
+
 
 
 
